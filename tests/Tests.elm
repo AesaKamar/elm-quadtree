@@ -2,7 +2,7 @@ module Tests exposing (..)
 
 import Array
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
+import Fuzz exposing (Fuzzer, int, list, string, floatRange, tuple4)
 import Test exposing (..)
 import QuadTree exposing (boundingBox, emptyQuadTree, findIntersecting, findItems, getAllItems, insert, insertMany, intersectBoundingBoxes, length)
 
@@ -124,6 +124,29 @@ quadTreeInsertTest =
                         List.foldl insert tree boundeds
                 in
                     Expect.equalLists (Array.toList <| getAllItems testTree) boundeds
+        , let
+            gausian =
+                floatRange -1 1
+
+            tupleOfGaussian =
+                tuple4 ( gausian, gausian, gausian, gausian )
+
+            boundingGaussian =
+                Fuzz.map (\( a, b, c, d ) -> { boundingBox = boundingBox a b c d }) tupleOfGaussian
+          in
+            fuzz (list boundingGaussian) "Add a ton of items" <|
+                \randomBoundeds ->
+                    let
+                        tree =
+                            emptyQuadTree treeLimits 5000
+
+                        boundeds =
+                            randomBoundeds
+
+                        testTree =
+                            List.foldl insert tree boundeds
+                    in
+                        Expect.equalLists (Array.toList <| getAllItems testTree) boundeds
         ]
 
 
@@ -172,3 +195,69 @@ treeLookupTest =
                 in
                     Expect.equalLists (List.take 1 <| List.reverse items) (Array.toList <| findIntersecting searchBox testTree)
         ]
+
+
+
+-- randomTest : Test
+-- randomTest =
+--     describe "github suggestions"
+--         [ test "getAllItems should return exact items count (even if they appear on different branches, or called multiple times)" <|
+--             \() ->
+--                 let
+--                     tree =
+--                         emptyQuadTree treeLimits 5
+--
+--                     items =
+--                         [ boundedItem 0 1 0 1
+--                         , boundedItem 0 1.1 0 1.1
+--                         , boundedItem 1 2 1 2.2
+--                         , boundedItem 2 3 2 3
+--                         , boundedItem 3 4 3 4
+--                         , boundedItem 4 5 4 5
+--                         , boundedItem 5 6 5 6
+--                         , boundedItem 6 7 6 7
+--                         , boundedItem 7 8 7 8
+--                         , boundedItem 8 9 8 9
+--                         , boundedItem 9 10 9 10
+--                         ]
+--
+--                     testTree =
+--                         insertMany (Array.fromList items) tree
+--
+--                     -- problem with Laziness
+--                     l1 =
+--                         getAllItems testTree
+--
+--                     l2 =
+--                         getAllItems testTree
+--
+--                     l3 =
+--                         getAllItems testTree
+--                 in
+--                     getAllItems testTree
+--                         |> Array.length
+--                         |> Expect.equal (Array.length l1)
+--         , test "Insert items that is more than maxSize of leaf, but in same place" <|
+--             \() ->
+--                 let
+--                     tree =
+--                         emptyQuadTree treeLimits 5
+--
+--                     items =
+--                         [ boundedItem 0 1 0 1
+--                         , boundedItem 0 1 0 1
+--                         , boundedItem 0 1 0 1
+--                         , boundedItem 0 1 0 1
+--                         , boundedItem 0 1 0 1
+--                         , boundedItem 0 1 0 1
+--                         ]
+--
+--                     testTree =
+--                         insertMany (Array.fromList items) tree
+--
+--                     -- findIntersecting ent2.b world.boundingBoxes
+--                 in
+--                     getAllItems testTree
+--                         |> Array.length
+--                         |> Expect.equal 6
+--         ]
