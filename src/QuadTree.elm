@@ -146,6 +146,8 @@ intersectIntervals interval1 interval2 =
 
 
 {-| Represents the bounds of some shape
+horizontal is an interval in the X dimension
+vertical is an interval in the Y dimension
 -}
 type alias BoundingBox =
     { horizontal : Interval
@@ -163,12 +165,12 @@ intersectBoundingBoxes box1 box2 =
 
 {-| Construct a bounding box.
 
-    boundingBox minX maxX minY maxY
+    boundingBox leftMostX rightMostX topMostY bottomMostY
 
 -}
 boundingBox : Float -> Float -> Float -> Float -> BoundingBox
-boundingBox minX maxX minY maxY =
-    BoundingBox (Interval minX maxX) (Interval minY maxY)
+boundingBox leftMost rightMost topMost bottomMost =
+    BoundingBox (Interval leftMost rightMost) (Interval topMost bottomMost)
 
 
 {-| Get the width of a bounding box.
@@ -208,52 +210,88 @@ center box =
     }
 
 
+{-| Carve out the NorthEast quartile
+where ORIGIN (0,0) is the TopLeft
+-}
 subdivideNE : BoundingBox -> BoundingBox
 subdivideNE box =
     let
-        minX =
+        leftMost =
             box.horizontal.low + halfWidth box
 
-        minY =
+        rightMost =
+            box.horizontal.high
+
+        topMost =
+            box.vertical.low
+
+        bottomMost =
             box.vertical.low + halfHeight box
     in
-        boundingBox minX box.horizontal.high minY box.vertical.high
+        boundingBox leftMost rightMost topMost bottomMost
 
 
+{-| Carve out the NorthWet quartile
+where ORIGIN (0,0) is the TopLeft
+-}
 subdivideNW : BoundingBox -> BoundingBox
 subdivideNW box =
     let
-        maxX =
-            box.horizontal.high - halfWidth box
+        leftMost =
+            box.horizontal.low
 
-        minY =
+        rightMost =
+            box.horizontal.low + halfWidth box
+
+        topMost =
+            box.vertical.low
+
+        bottomMost =
             box.vertical.low + halfHeight box
     in
-        boundingBox box.horizontal.low maxX minY box.vertical.high
+        boundingBox leftMost rightMost topMost bottomMost
 
 
+{-| Carve out the SouthWest quartile
+where ORIGIN (0,0) is the TopLeft
+-}
 subdivideSW : BoundingBox -> BoundingBox
 subdivideSW box =
     let
-        maxX =
-            box.horizontal.high - halfWidth box
+        leftMost =
+            box.horizontal.low
 
-        maxY =
-            box.vertical.high - halfHeight box
+        rightMost =
+            box.horizontal.low + halfWidth box
+
+        topMost =
+            box.vertical.low + halfHeight box
+
+        bottomMost =
+            box.vertical.high
     in
-        boundingBox box.horizontal.low maxX box.vertical.low maxY
+        boundingBox leftMost rightMost topMost bottomMost
 
 
+{-| Carve out the SouthEast quartile
+where ORIGIN (0,0) is the TopLeft
+-}
 subdivideSE : BoundingBox -> BoundingBox
 subdivideSE box =
     let
-        minX =
+        leftMost =
             box.horizontal.low + halfWidth box
 
-        maxY =
-            box.vertical.high - halfHeight box
+        rightMost =
+            box.horizontal.high
+
+        topMost =
+            box.vertical.low + halfHeight box
+
+        bottomMost =
+            box.vertical.high
     in
-        boundingBox minX box.horizontal.high box.vertical.low maxY
+        boundingBox leftMost rightMost topMost bottomMost
 
 
 
@@ -261,6 +299,7 @@ subdivideSE box =
 
 
 {-| Extend this record type in order to use the QuadTree.
+Poor man's typeclass, a such that there is a field which is of type bounded
 -}
 type alias Bounded a =
     { a | boundingBox : BoundingBox }

@@ -29,10 +29,14 @@ type alias NodeId =
     Int
 
 
+type alias BoundedPoint =
+    { x : Float, y : Float, boundingBox : BoundingBox }
+
+
 type alias Model =
     { nodes : List NodeId
     , edges : List ( NodeId, NodeId )
-    , quadTree : QuadTree (Bounded Int)
+    , quadTree : QuadTree BoundedPoint
     , screenDims : Size
     }
 
