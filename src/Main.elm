@@ -6,6 +6,7 @@ import Svg exposing (rect, svg, g)
 import Svg.Attributes
 import Window exposing (Size, resizes)
 import QuadTree exposing (..)
+import Task
 
 
 type Msg
@@ -48,7 +49,7 @@ init =
       , quadTree = emptyQuadTree (boundingBox 0.0 0.0 0.0 0.0) 1000
       , screenDims = { height = 0, width = 0 }
       }
-    , Cmd.none
+    , Task.perform WindowResize Window.size
     )
 
 
@@ -112,4 +113,9 @@ view model =
         , viewBoxSvgAttr model.screenDims
         , Html.Attributes.style [ ( "outline-offset", "-10px" ) ]
         ]
-        [ Html.div [] [ Html.text "Hello" ] ]
+        [ Svg.rect
+            [ Svg.Attributes.width "300px"
+            , Svg.Attributes.height "300px"
+            ]
+            []
+        ]
