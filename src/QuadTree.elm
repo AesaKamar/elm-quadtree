@@ -453,10 +453,10 @@ into an empty quadTree. Useful if the items in
 the quadTree find themselves in the wrong
 leaves.
 -}
-reset : QuadTree (Bounded a) -> QuadTree (Bounded a)
-reset quadTree =
+reset : BoundingBox -> QuadTree (Bounded a) -> QuadTree (Bounded a)
+reset bb quadTree =
     insertMany (getAllItems quadTree)
-        (emptyQuadTree (getBoundingBox quadTree) (getMaxSize quadTree))
+        (emptyQuadTree bb (getMaxSize quadTree))
 
 
 {-| Find all items in the quadTree which share a leaf with the given
@@ -514,7 +514,7 @@ the function on the quadTree.
 -}
 applySafe : (Bounded a -> Array.Array (Bounded a) -> Bounded a) -> QuadTree (Bounded a) -> QuadTree (Bounded a)
 applySafe f quadTree =
-    reset <| apply f quadTree
+    reset (getBoundingBox quadTree) <| apply f quadTree
 
 
 {-| The good 'ol map function.
@@ -544,4 +544,4 @@ automatically after applying the function.
 -}
 mapSafe : (Bounded a -> Bounded b) -> QuadTree (Bounded a) -> QuadTree (Bounded b)
 mapSafe f quadTree =
-    reset <| map f quadTree
+    reset (getBoundingBox quadTree) <| map f quadTree
