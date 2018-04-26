@@ -3,7 +3,7 @@ module Main exposing (..)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Svg exposing (rect, svg, g)
-import Svg.Attributes
+import Svg.Attributess
 import Window exposing (Size, resizes)
 import QuadTree exposing (..)
 import Task
@@ -119,3 +119,34 @@ view model =
             ]
             []
         ]
+
+
+
+-- TODO Do tail call elimination on this thing
+
+
+viewQuadTree : QuadTree -> Svg.Svg
+viewQuadTree quadTree =
+    case quadTree of
+        Leaf bb maxItems elems ->
+            viewLeaf bb maxItems elems
+
+        Node bb ne nw sw se ->
+            viewNode bb ne nw sw se
+
+
+viewLeaf : BoundingBox -> Int -> Array a -> Svg.Svg
+viewLeaf bb maxItems elems =
+    Svg.g
+        [ Svg.Attribute.x (bb.horizontal.low <| toString ++ "px")
+        , Svg.Attribute.y (bb.vertical.low <| toString ++ "px")
+        , Svg.Attribute.width
+            ((bb.horizontal.high - bb.horizontal.low) <| toString ++ "px")
+        , Svg.Attribute.height ((bb.vertical.high - bb.vertical.low) <| toString ++ "px")
+        ]
+        []
+
+
+viewNode : BoundingBox -> QuadTree a -> QuadTree a -> QuadTree a -> QuadTree a -> Svg.Svg
+viewNode bb ne nw sw se =
+    Svg.g [] []
